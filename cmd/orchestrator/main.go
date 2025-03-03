@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/Vlod-and-whot/AsyncCalculationWebService/internal/application"
+	"github.com/Vlod-and-whot/AsyncCalculationWebServiceProject/internal/application"
 )
 
 func main() {
