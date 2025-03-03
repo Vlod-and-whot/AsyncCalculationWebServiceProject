@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Vlod-and-whot/AsyncCalculationWebService/pkg/calculation"
+	"github.com/Vlod-and-whot/AsyncCalculationWebServiceProject/pkg/calculation"
 )
 
 type Agent struct {
