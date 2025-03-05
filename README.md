@@ -6,9 +6,10 @@
 Установка и конфигурация
 Клонируйте репозиторий:
 
+```bash
 git clone https://github.com/Vlod-and-whot/AsyncCalculationWebServiceProject.git
 cd AsyncCalculationWebServiceProject
-
+```
 Убедитесь, что у вас установлен Go версии 1.20 или выше:
 
 go version
