@@ -1,103 +1,318 @@
-1) Калькулятор
-   
-AsyncCalculationWebServiceProject — это проект представляет собой асинхронный веб-сервис, разработанный на языке Go. Он предназначен для обработки HTTP-запросов и предоставления данных пользователям через API. Этот сервис для выполнения математических вычислений на основе переданного выражения. Сервис предоставляет API для обработки запросов на вычисления, а также включает в себя набор тестов для проверки корректности работы.
+# Асинхронная система для вычисления арифметических выражений
 
-2) Проект написан на языке Go, организован в модульной структуре и содержит примеры использования.
+Асинхронная система для вычисления арифметических выражений
+Данная система позволяет выполнять параллельный расчёт сложных арифметических выражений с помощью центрального оркестратора и вычислительных агентов.
 
-3) Установка и запуск
-   
-Для запуска проекта выполните следующие шаги:
+Установка и конфигурация
+Клонируйте репозиторий:
 
-4) Склонируйте репозиторий:
-   
 git clone https://github.com/Vlod-and-whot/AsyncCalculationWebServiceProject.git
-cd calc_go
-Убедитесь, что Go установлен и находится в $PATH (проверить версию можно командой go version).
+cd AsyncCalculationWebServiceProject
 
-5) Запустите API-сервер:
+Убедитесь, что у вас установлен Go версии 1.20 или выше:
 
-go run ./cmd/main.go
-Сервер запустится на порту 8080 по умолчанию. Если необходимо изменить порт, установите переменную окружения PORT перед запуском:
+go version
 
-В Linux и macOS
-export PORT=9090
-go run ./cmd/main.go
-В Windows (PowerShell)
-$env:PORT=9090
-go run ./cmd/main.go
+Если Go отсутствует:
 
-6) Использование API
-Эндпоинт
+Linux/macOS: Официальная инструкция
+Windows: Скачайте установщик
+Структура системы
+Оркестратор (по умолчанию работает на порту 8080):
+
+Принимает арифметические выражения через REST API
+Делит выражения на элементарные задачи
+Организует очередь заданий
+Агрегирует результаты вычислений
+Отслеживает статус выполнения
+Вычислительные агенты:
+
+Получают задания посредством HTTP-запросов
+Выполняют арифметические операции с заданной задержкой
+Отправляют результаты обратно через API
+Системные требования
+Go 1.20+
+Поддерживаемые операции: +, -, *, /
+Соблюдение приоритета операций и обработка скобок
+Параллельное выполнение вычислений
+Запуск системы
+1. Старт оркестратора
+Linux / macOS (bash):
+
+bash
+
+# Установка времени операций (в миллисекундах)
+export TIME_ADDITION_MS=200
+export TIME_SUBTRACTION_MS=200
+export TIME_MULTIPLICATIONS_MS=300
+export TIME_DIVISIONS_MS=400
+
+# Запуск оркестратора
+go run ./cmd/orchestrator/main.go
+Windows (cmd.exe):
+
+cmd
+
+:: Установка времени операций (в миллисекундах)
+set TIME_ADDITION_MS=200
+set TIME_SUBTRACTION_MS=200
+set TIME_MULTIPLICATIONS_MS=300
+set TIME_DIVISIONS_MS=400
+
+:: Запуск оркестратора
+go run .\cmd\orchestrator\main.go
+Windows (PowerShell):
+
+powershell
+
+# Установка времени операций (в миллисекундах)
+$env:TIME_ADDITION_MS = "200"
+$env:TIME_SUBTRACTION_MS = "200"
+$env:TIME_MULTIPLICATIONS_MS = "300"
+$env:TIME_DIVISIONS_MS = "400"
+
+# Запуск оркестратора
+go run .\cmd\orchestrator\main.go
+2. Старт вычислительного агента
+Linux / macOS (bash):
+
+bash
+
+# Задание вычислительной мощности (количество горутин) и URL оркестратора
+export COMPUTING_POWER=4
+export ORCHESTRATOR_URL=http://localhost:8080
+
+# Запуск агента
+go run ./cmd/agent/main.go
+Windows (cmd.exe):
+
+cmd
+
+:: Задание вычислительной мощности (количество горутин) и URL оркестратора
+set COMPUTING_POWER=4
+set ORCHESTRATOR_URL=http://localhost:8080
+
+:: Запуск агента
+go run .\cmd\agent\main.go
+Windows (PowerShell):
+
+powershell
+
+# Задание вычислительной мощности (количество горутин) и URL оркестратора
+$env:COMPUTING_POWER = "4"
+$env:ORCHESTRATOR_URL = "http://localhost:8080"
+
+# Запуск агента
+go run .\cmd\agent\main.go
+Дополнительно: запуск с использованием Docker
+Dockerfile для оркестратора (Dockerfile.orchestrator):
+
+dockerfile
+
+FROM golang:1.20-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go build -o orchestrator ./cmd/orchestrator
+
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/orchestrator .
+ENV TIME_ADDITION_MS=200 \
+    TIME_SUBTRACTION_MS=200 \
+    TIME_MULTIPLICATIONS_MS=300 \
+    TIME_DIVISIONS_MS=400
+EXPOSE 8080
+ENTRYPOINT ["./orchestrator"]
+Dockerfile для агента (Dockerfile.agent):
+
+dockerfile
+
+FROM golang:1.20-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go build -o agent ./cmd/agent
+
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/agent .
+ENV COMPUTING_POWER=4 \
+    ORCHESTRATOR_URL=http://orchestrator:8080
+ENTRYPOINT ["./agent"]
+docker-compose.yml:
+
+yaml
+
+version: "3.8"
+services:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    ports:
+      - "8080:8080"
+    environment:
+      - TIME_ADDITION_MS=200
+      - TIME_SUBTRACTION_MS=200
+      - TIME_MULTIPLICATIONS_MS=300
+      - TIME_DIVISIONS_MS=400
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile.agent
+    depends_on:
+      - orchestrator
+    environment:
+      - COMPUTING_POWER=4
+      - ORCHESTRATOR_URL=http://orchestrator:8080
+.dockerignore:
+
+text
+
+.git
+node_modules
+*.log
+bin/
+vendor/
+Запуск через Docker Compose:
+
+bash
+
+docker-compose up --build
+API Эндпоинты
+1. Добавление выражения
 POST /api/v1/calculate
-Заголовки
-Content-Type: application/json
-Тело запроса
-Пример:
+Пример запроса:
+
+bash
+
+curl --location 'http://localhost:8080/api/v1/calculate' \
+--header 'Content-Type: application/json' \
+--data '{
+  "expression": "(2+3)*4-10/2"
+}'
+Успешный ответ (201):
+
+json
 
 {
-  "expression": "2+2*2"
+    "id": "1"
 }
-Ответы
-Успешный запрос
+2. Получение списка выражений
+GET /api/v1/expressions
+Пример ответа (200):
 
-Статус-код: 200 OK
-Пример ответа:
+json
 
 {
-  "result": "6"
+    "expressions": [
+        {
+            "id": "1",
+            "expression": "(2+3)*4-10/2",
+            "status": "completed",
+            "result": 15
+        },
+        {
+            "id": "2",
+            "expression": "8/(4-4)",
+            "status": "error",
+            "result": null
+        }
+    ]
 }
-Ошибка обработки выражения
+3. Получение выражения по ID
+GET /api/v1/expressions/{id}
+Пример запроса:
 
-Статус-код: 422 Unprocessable Entity
-Пример ответа:
+bash
+
+curl http://localhost:8080/api/v1/expressions/1
+Ответ (200):
+
+json
 
 {
-  "error": "Error calculation"
+    "expression": {
+        "id": "1",
+        "status": "completed",
+        "result": 15
+    }
 }
-Неподдерживаемый метод
+Внутренний API (для агентов)
+1. Извлечение задачи
+GET /internal/task
+Пример ответа (200):
 
-Статус-код: 405 Method Not Allowed
-Пример ответа:
+json
 
 {
-  "error": "Wrong Method"
+    "task": {
+        "id": "5",
+        "arg1": 2,
+        "arg2": 3,
+        "operation": "+",
+        "operation_time": 200
+    }
 }
-Некорректное тело запроса
+2. Отправка результата
+POST /internal/task
+Пример запроса:
 
-Статус-код: 400 Bad Request
-Пример ответа:
+json
 
 {
-  "error": "Invalid Body"
+  "id": "5",
+  "result": 5
 }
+Переменные окружения
+Оркестратор:
+
+PORT — порт сервера (по умолчанию 8080)
+TIME_ADDITION_MS — время сложения (мс)
+TIME_SUBTRACTION_MS — время вычитания (мс)
+TIME_MULTIPLICATIONS_MS — время умножения (мс)
+TIME_DIVISIONS_MS — время деления (мс)
+Агент:
+
+ORCHESTRATOR_URL — URL оркестратора
+COMPUTING_POWER — количество параллельных задач
 Примеры использования
-Успешный запрос:
-curl --location 'http://localhost:8080/api/v1/calculate' \
---header 'Content-Type: application/json' \
---data '{
-  "expression": "2+2*2"
-}'
-Ответ:
+Сценарий 1: Успешное вычисление
+bash
 
-{
-  "result": "6"
-}
-Ошибка: некорректное выражение:
+# Отправка выражения
 curl --location 'http://localhost:8080/api/v1/calculate' \
---header 'Content-Type: application/json' \
---data '{
-  "expression": "2*(2+2{)"
-}'
-Ответ:
+--data '{"expression": "2+2*2"}'
 
+# Проверка статуса
+curl http://localhost:8080/api/v1/expressions/1
+
+# Ответ через 500 мс:
 {
-  "error": "Error calculation"
+    "expression": {
+        "id": "1",
+        "status": "completed",
+        "result": 6
+    }
 }
-Ошибка: неверный метод:
+Сценарий 2: Ошибка деления на ноль
+bash
+
 curl --location 'http://localhost:8080/api/v1/calculate' \
---header 'Content-Type: application/json'
-Ответ:
+--data '{"expression": "10/(5-5)"}'
 
+# Ответ:
 {
-  "error": "Wrong Method"
+    "expression": {
+        "id": "2",
+        "status": "error",
+        "result": null
+    }
 }
+Тестирование
+bash
+
+go test .\tests\
