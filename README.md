@@ -19,7 +19,6 @@ go version
 
 Если Go отсутствует:
 
-Linux/macOS: Официальная инструкция
 Windows: Скачайте установщик
 Структура системы
 Оркестратор (по умолчанию работает на порту 8080):
@@ -66,8 +65,8 @@ set TIME_DIVISIONS_MS=400
 :: Запуск оркестратора
 go run .\cmd\orchestrator\main.go
 Windows (PowerShell):
-
-``powershell
+```
+```powershell
 
 # Установка времени операций (в миллисекундах)
 $env:TIME_ADDITION_MS = "200"
@@ -299,6 +298,7 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
 # Проверка статуса
 curl http://localhost:8080/api/v1/expressions/1
 ```
+```json
 # Ответ через 500 мс:
 {
     "expression": {
@@ -307,13 +307,13 @@ curl http://localhost:8080/api/v1/expressions/1
         "result": 6
     }
 }
-
+```
 Сценарий 2: Ошибка деления на ноль
 ```bash
 
 curl --location 'http://localhost:8080/api/v1/calculate' \
 --data '{"expression": "10/(5-5)"}'
-```
+```json
 # Ответ:
 {
     "expression": {
@@ -322,6 +322,7 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
         "result": null
     }
 }
+```
 Тестирование
 ```bash
 
