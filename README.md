@@ -1,18 +1,21 @@
-# Асинхронная система для вычисления арифметических выражений
+### Асинхронная система для вычисления арифметических выражений
 
 Асинхронная система для вычисления арифметических выражений
 Данная система позволяет выполнять параллельный расчёт сложных арифметических выражений с помощью центрального оркестратора и вычислительных агентов.
 
-Установка и конфигурация
+# Установка и конфигурация
 Клонируйте репозиторий:
 
 ```bash
 git clone https://github.com/Vlod-and-whot/AsyncCalculationWebServiceProject.git
 cd AsyncCalculationWebServiceProject
 ```
+
 Убедитесь, что у вас установлен Go версии 1.20 или выше:
 
+```bash
 go version
+```
 
 Если Go отсутствует:
 
@@ -40,7 +43,7 @@ Go 1.20+
 1. Старт оркестратора
 Linux / macOS (bash):
 
-bash
+```bash
 
 # Установка времени операций (в миллисекундах)
 export TIME_ADDITION_MS=200
@@ -51,8 +54,8 @@ export TIME_DIVISIONS_MS=400
 # Запуск оркестратора
 go run ./cmd/orchestrator/main.go
 Windows (cmd.exe):
-
-cmd
+```
+```cmd
 
 :: Установка времени операций (в миллисекундах)
 set TIME_ADDITION_MS=200
@@ -64,7 +67,7 @@ set TIME_DIVISIONS_MS=400
 go run .\cmd\orchestrator\main.go
 Windows (PowerShell):
 
-powershell
+``powershell
 
 # Установка времени операций (в миллисекундах)
 $env:TIME_ADDITION_MS = "200"
@@ -76,8 +79,8 @@ $env:TIME_DIVISIONS_MS = "400"
 go run .\cmd\orchestrator\main.go
 2. Старт вычислительного агента
 Linux / macOS (bash):
-
-bash
+```
+```bash
 
 # Задание вычислительной мощности (количество горутин) и URL оркестратора
 export COMPUTING_POWER=4
@@ -86,8 +89,8 @@ export ORCHESTRATOR_URL=http://localhost:8080
 # Запуск агента
 go run ./cmd/agent/main.go
 Windows (cmd.exe):
-
-cmd
+```
+```cmd
 
 :: Задание вычислительной мощности (количество горутин) и URL оркестратора
 set COMPUTING_POWER=4
@@ -96,8 +99,8 @@ set ORCHESTRATOR_URL=http://localhost:8080
 :: Запуск агента
 go run .\cmd\agent\main.go
 Windows (PowerShell):
-
-powershell
+```
+```powershell
 
 # Задание вычислительной мощности (количество горутин) и URL оркестратора
 $env:COMPUTING_POWER = "4"
@@ -107,8 +110,8 @@ $env:ORCHESTRATOR_URL = "http://localhost:8080"
 go run .\cmd\agent\main.go
 Дополнительно: запуск с использованием Docker
 Dockerfile для оркестратора (Dockerfile.orchestrator):
-
-dockerfile
+```
+```dockerfile
 
 FROM golang:1.20-alpine AS builder
 WORKDIR /app
@@ -127,8 +130,8 @@ ENV TIME_ADDITION_MS=200 \
 EXPOSE 8080
 ENTRYPOINT ["./orchestrator"]
 Dockerfile для агента (Dockerfile.agent):
-
-dockerfile
+```
+```dockerfile
 
 FROM golang:1.20-alpine AS builder
 WORKDIR /app
@@ -144,8 +147,8 @@ ENV COMPUTING_POWER=4 \
     ORCHESTRATOR_URL=http://orchestrator:8080
 ENTRYPOINT ["./agent"]
 docker-compose.yml:
-
-yaml
+```
+```yaml
 
 version: "3.8"
 services:
@@ -180,15 +183,15 @@ bin/
 vendor/
 Запуск через Docker Compose:
 
-bash
+```bash
 
 docker-compose up --build
 API Эндпоинты
 1. Добавление выражения
 POST /api/v1/calculate
 Пример запроса:
-
-bash
+```
+```bash
 
 curl --location 'http://localhost:8080/api/v1/calculate' \
 --header 'Content-Type: application/json' \
@@ -196,17 +199,18 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
   "expression": "(2+3)*4-10/2"
 }'
 Успешный ответ (201):
-
-json
+```
+```json
 
 {
     "id": "1"
 }
+```
 2. Получение списка выражений
 GET /api/v1/expressions
 Пример ответа (200):
 
-json
+```json
 
 {
     "expressions": [
@@ -224,16 +228,17 @@ json
         }
     ]
 }
+```
 3. Получение выражения по ID
 GET /api/v1/expressions/{id}
 Пример запроса:
 
-bash
+```bash
 
 curl http://localhost:8080/api/v1/expressions/1
 Ответ (200):
-
-json
+```
+```json
 
 {
     "expression": {
@@ -242,12 +247,13 @@ json
         "result": 15
     }
 }
+```
 Внутренний API (для агентов)
 1. Извлечение задачи
 GET /internal/task
 Пример ответа (200):
 
-json
+```json
 
 {
     "task": {
@@ -258,16 +264,18 @@ json
         "operation_time": 200
     }
 }
+```
 2. Отправка результата
 POST /internal/task
 Пример запроса:
 
-json
+```json
 
 {
   "id": "5",
   "result": 5
 }
+```
 Переменные окружения
 Оркестратор:
 
@@ -282,7 +290,7 @@ ORCHESTRATOR_URL — URL оркестратора
 COMPUTING_POWER — количество параллельных задач
 Примеры использования
 Сценарий 1: Успешное вычисление
-bash
+```bash
 
 # Отправка выражения
 curl --location 'http://localhost:8080/api/v1/calculate' \
@@ -290,7 +298,7 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
 
 # Проверка статуса
 curl http://localhost:8080/api/v1/expressions/1
-
+```
 # Ответ через 500 мс:
 {
     "expression": {
@@ -299,12 +307,13 @@ curl http://localhost:8080/api/v1/expressions/1
         "result": 6
     }
 }
+
 Сценарий 2: Ошибка деления на ноль
-bash
+```bash
 
 curl --location 'http://localhost:8080/api/v1/calculate' \
 --data '{"expression": "10/(5-5)"}'
-
+```
 # Ответ:
 {
     "expression": {
@@ -314,6 +323,7 @@ curl --location 'http://localhost:8080/api/v1/calculate' \
     }
 }
 Тестирование
-bash
+```bash
 
 go test .\tests\
+```
